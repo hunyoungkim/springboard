@@ -6,3 +6,5 @@
 3. 글 쓰기
 4. 글 수정 
 5. 글 삭제
+
+![list](https://user-images.githubusercontent.com/72241081/94889399-fff90180-04b6-11eb-8c25-0886cd9a3f94.png)
