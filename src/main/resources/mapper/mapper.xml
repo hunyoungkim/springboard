@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.Board">
+
+	<select id="selectAll" resultType="boardVO"> 
+<![CDATA[
+select * from (select rownum rnum, num, m_id, subject, content,
+attached_file, answer_num, answer_lev, answer_seq, read_count, write_date
+ from (select * from jboard order by answer_num desc, answer_seq asc))
+where rnum>=#{startrow} and rnum<=#{startrow} +10-1
+]]>
+	</select>
+
+	<select id="NumCount" resultType="String">
+		select
+		max(num)
+		from jboard
+	</select>
+
+	<select id="select" parameterType="boardVO" resultType="boardVO">
+		select
+		*
+		from jboard
+		where num = #{num}
+	</select>
+
+	<select id="ListCount" resultType="int">
+		select count(*) from jboard
+	</select>
+
+	<insert id="add" parameterType="boardVO">
+		insert
+		into jboard (num, m_id, subject, content, attached_file, answer_num,
+		answer_lev,answer_seq,read_count,write_date)
+		values(#{num}, #{m_id}, #{subject}, #{content}, #{attached_file,jdbcType=VARCHAR},
+		#{answer_num}, #{answer_lev},#{answer_seq},#{read_count},sysdate)
+	</insert>
+
+	<update id="update" parameterType="boardVO">
+		update jboard set m_id=#{m_id}, subject=#{subject},
+		content=#{content},attached_file=#{attached_file,jdbcType=VARCHAR}
+		where num=#{num}
+	</update>
+
+	<update id="readcount" parameterType="boardVO">
+<![CDATA[
+update jboard set read_count = read_count+1 where num = #{num}
+]]>
+	</update>
+
+	<select id="searchcount" parameterType="Hashmap" resultType="int">
+<![CDATA[
+select count(*) from jboard
+]]>
+		<where>
+			<if test="keyword != null and keyfield.equals('all')">
+				(subject like '%${keyword}%' ) or ( m_id like '%${keyword}%') or ( content
+				like '%${keyword}%')
+			</if>
+
+			<if test="keyword != null and keyfield.equals('m_id')">
+				and (m_id like '%${keyword}%' )
+			</if>
+
+			<if test="keyword != null and keyfield.equals('subject')">
+				and (subject like '%${keyword}%' )
+			</if>
+
+			<if test="keyword != null and keyfield.equals('content')">
+				and (content like '%${keyword}%' )
+			</if>
+		</where>
+	</select>
+
+
+	<!-- <select id="searchcount" resultType="int"> <![CDATA[ select count(*) 
+		from jboard where #{search,jdbcType=VARCHAR} ]]> </select> -->
+	<select id="searchlist" parameterType="Hashmap" resultType="boardVO">
+
+		select *
+		from (select rownum rnum,num,m_id,subject,content,
+		attached_file,answer_num,answer_lev,answer_seq,read_count,write_date
+		from (select * from jboard order by answer_num desc, answer_seq asc)
+		<where>
+			<if test="keyword != null and keyfield.equals('all')">
+				(subject like '%${keyword}%' ) or ( m_id like '%${keyword}%') or ( content like '%${keyword}%')
+			</if>
+
+			<if test="keyword != null and keyfield.equals('m_id')">
+				and (m_id like '%${keyword}%' )
+			</if>
+
+			<if test="keyword != null and keyfield.equals('subject')">
+				and (subject like '%${keyword}%' )
+			</if>
+
+			<if test="keyword != null and keyfield.equals('content')">
+				and (content like '%${keyword}%' )
+			</if>
+		</where>
+		order by rnum
+		)	
+<![CDATA[
+	 where rnum >= ${ startpage } 
+	 and rnum <= ${endpage}
+]]>
+	</select>
+
+	<!-- <select id="searchlist" resultType="boardVO"> <![CDATA[ select * from 
+		(select rownum rnum,num,m_id,subject,content, attached_file,answer_num,answer_lev,answer_seq,read_count,write_date 
+		from (select * from jboard order by answer_num desc, answer_seq asc) where 
+		#{alist.get(0)}) where rnum>=#{alist.get(01} and rnum<=#{alist.get(2)} ]]> 
+		</select> -->
+<delete id="delete" parameterType="int">
+delete from jboard where num=#{num}
+</delete>
+
+<select id="replynum" resultType="int">
+select max(num) from jboard
+</select>
+
+<update id="answer" parameterType="Hashmap">
+update jboard set answer_seq=answer_seq+1
+where answer_num=#{answer_num} and answer_seq>#{answer_seq}
+</update>
+<insert id="reply" parameterType="boardVO">
+		insert
+		into jboard (num, m_id, subject, content, attached_file, answer_num,
+		answer_lev,answer_seq,read_count,write_date)
+		values(#{num}, #{m_id}, #{subject}, #{content}, #{attached_file,jdbcType=VARCHAR},
+		#{answer_num}, #{answer_lev},#{answer_seq},#{read_count},sysdate)
+</insert>
+</mapper>
